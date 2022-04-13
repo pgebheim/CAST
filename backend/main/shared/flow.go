@@ -54,7 +54,8 @@ func (fa *FlowAdapter) GetCurrentBlockHeight() (int, error) {
 	return int(block.Height), nil
 }
 
-func (fa *FlowAdapter) UserSignatureValidate(address string, message string, sigs *[]CompositeSignature) error {
+
+func (fa *FlowAdapter) PayloadValidate(address string, payload string, sigs *[]CompositeSignature, string domainSeparationTag) error {
 	flowAddress := flow.HexToAddress(address)
 	cadenceAddress := cadence.NewAddress(flowAddress)
 
@@ -81,7 +82,8 @@ func (fa *FlowAdapter) UserSignatureValidate(address string, message string, sig
 			cadenceAddress,
 			cadence.NewArray(cadenceKeyIds),
 			cadence.NewArray(cadenceSigs),
-			cadence.String(message),
+			cadence.String(payload),
+                        cadence.String(domainSeparationTag)
 		},
 	)
 
@@ -102,4 +104,13 @@ func (fa *FlowAdapter) UserSignatureValidate(address string, message string, sig
 	}
 
 	return nil
+}
+
+func (fa *FlowAdapter) TransactionValidate(address string, data []byte, sigs *[]CompositeSignature) error {
+        return PayloadValidate(address, hex.EncodeToString(data), sigs, "FLOW-V0.0-transaction")
+}
+
+
+func (fa *FlowAdapter) UserSignatureValidate(address string, message string, sigs *[]CompositeSignature) error {
+        return PayloadValidate(address, message, sigs, "FLOW-V0.0-user")
 }

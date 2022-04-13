@@ -4,7 +4,8 @@ pub fun main(
   address: Address,
   keyIds: [Int],
   signatures: [String],
-  message: String
+  message: String,
+  domainSeparationTag: String
 ): Bool {
   let keyList = Crypto.KeyList()
   
@@ -29,7 +30,7 @@ pub fun main(
       if pk.verify(
         signature: signatureBytes,
         signedData: messageBytes,
-        domainSeparationTag: "FLOW-V0.0-user",
+        domainSeparationTag: domainSeparationTag,
         hashAlgorithm: key.hashAlgorithm
       ) {
         // this key is good, add weight to total weight
