@@ -55,7 +55,7 @@ func (fa *FlowAdapter) GetCurrentBlockHeight() (int, error) {
 }
 
 
-func (fa *FlowAdapter) PayloadValidate(address string, payload string, sigs *[]CompositeSignature, string domainSeparationTag) error {
+func (fa *FlowAdapter) PayloadValidate(address string, payload string, sigs *[]CompositeSignature, domainSeparationTag string) error {
 	flowAddress := flow.HexToAddress(address)
 	cadenceAddress := cadence.NewAddress(flowAddress)
 

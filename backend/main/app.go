@@ -398,6 +398,9 @@ func (a *App) createVoteForProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+        // NB: Branching logic here to parse the message differently if its a signed message
+        // or a transaction
+
 	// validate proper message format
 	// <proposalId>:<choice>:<timestamp>
 	if err := v.ValidateMessage(p); err != nil {
@@ -406,6 +409,9 @@ func (a *App) createVoteForProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// NB: Do we need to add the outcome account addrs to the database so that they can be validated
+	// in this same place?
+
 	// validate choice exists on proposal
 	if err := v.ValidateChoice(p); err != nil {
 		log.Error().Err(err)
@@ -413,10 +419,17 @@ func (a *App) createVoteForProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// validate user signature
+        // NB: v.Message here should be a string for the UserSignature, there is another method `TransactionValidate` which 
+	// I added to take a byte array for the RLP data + use the right domain separation tag for validating a transaction.
+	// If the transaction data is also sent as a string to a backend then that function should be modified such that it takes
+	// a string.
+	// validate user signature or transaction signature
 	if err := a.FlowAdapter.UserSignatureValidate(v.Addr, v.Message, v.Composite_signatures); err != nil {
-		respondWithError(w, http.StatusBadRequest, err.Error())
-		return
+		// Could also be a transaction signature	
+		if err := a.FlowAdapter.TransactionValidate(v.Addr, v.Message, v.Composite_signatures); err != nil {
+			respondWithError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 	}
 
 	v.Proposal_id = proposalId
